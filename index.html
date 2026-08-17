@@ -1,0 +1,4793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>NX Voice | Forwarding Management Portal</title>
+
+  <meta
+    name="description"
+    content="Managed VoIP forwarding portal for toll-free numbers, call routing, live calls, usage and CDR reporting."
+  />
+
+  <style>
+    /* =========================================================
+       NX VOICE — FORWARDING MANAGEMENT PORTAL
+       DEMO VERSION — SINGLE FILE
+       ========================================================= */
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #07111f;
+      --bg-soft: #091625;
+      --sidebar: #091522;
+      --panel: #0d1b2d;
+      --panel-light: #102238;
+      --panel-hover: #132842;
+
+      --border: #1d3551;
+      --border-soft: rgba(65, 96, 132, 0.25);
+
+      --text: #f4f7fb;
+      --text-soft: #c8d4e2;
+      --muted: #7f92aa;
+
+      --primary: #4285ff;
+      --primary-dark: #2563eb;
+      --primary-soft: rgba(66, 133, 255, 0.12);
+
+      --green: #22d394;
+      --green-soft: rgba(34, 211, 148, 0.12);
+
+      --orange: #ffb64d;
+      --orange-soft: rgba(255, 182, 77, 0.12);
+
+      --red: #ff6474;
+      --red-soft: rgba(255, 100, 116, 0.12);
+
+      --purple: #8d70ff;
+
+      --sidebar-width: 260px;
+
+      --shadow:
+        0 20px 60px rgba(0, 0, 0, 0.25);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+      color: var(--text);
+
+      background:
+        radial-gradient(
+          circle at 88% 5%,
+          rgba(66, 133, 255, 0.14),
+          transparent 28%
+        ),
+        radial-gradient(
+          circle at 40% 110%,
+          rgba(141, 112, 255, 0.08),
+          transparent 30%
+        ),
+        var(--bg);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* =========================================================
+       LAYOUT
+       ========================================================= */
+
+    .app {
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+
+      top: 0;
+      left: 0;
+      bottom: 0;
+
+      width: var(--sidebar-width);
+
+      z-index: 100;
+
+      padding: 20px 14px;
+
+      overflow-y: auto;
+
+      background:
+        linear-gradient(
+          180deg,
+          rgba(9, 21, 34, 0.98),
+          rgba(7, 17, 31, 0.98)
+        );
+
+      border-right: 1px solid var(--border);
+
+      box-shadow:
+        18px 0 50px rgba(0, 0, 0, 0.12);
+    }
+
+    .main {
+      min-height: 100vh;
+
+      margin-left: var(--sidebar-width);
+    }
+
+    /* =========================================================
+       SIDEBAR
+       ========================================================= */
+
+    .brand {
+      display: flex;
+
+      align-items: center;
+
+      gap: 12px;
+
+      padding:
+        4px 8px
+        24px;
+    }
+
+    .brand-logo {
+      width: 43px;
+      height: 43px;
+
+      border-radius: 13px;
+
+      display: grid;
+
+      place-items: center;
+
+      font-size: 17px;
+
+      font-weight: 900;
+
+      letter-spacing: -0.04em;
+
+      background:
+        linear-gradient(
+          135deg,
+          #4285ff,
+          #6a5cff
+        );
+
+      box-shadow:
+        0 15px 35px rgba(66, 133, 255, 0.25);
+    }
+
+    .brand-copy strong {
+      display: block;
+
+      font-size: 15px;
+
+      letter-spacing: -0.02em;
+    }
+
+    .brand-copy span {
+      display: block;
+
+      margin-top: 3px;
+
+      color: var(--muted);
+
+      font-size: 9px;
+
+      font-weight: 800;
+
+      letter-spacing: 0.14em;
+    }
+
+    .sidebar-label {
+      margin:
+        15px 11px
+        7px;
+
+      color: #526983;
+
+      font-size: 9px;
+
+      font-weight: 900;
+
+      letter-spacing: 0.15em;
+    }
+
+    .nav-button {
+      width: 100%;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 11px;
+
+      border: 1px solid transparent;
+
+      padding: 11px 12px;
+
+      margin-bottom: 3px;
+
+      border-radius: 11px;
+
+      color: #8fa4ba;
+
+      background: transparent;
+
+      text-align: left;
+
+      font-size: 12px;
+
+      font-weight: 700;
+
+      transition: 0.18s ease;
+    }
+
+    .nav-button:hover {
+      color: white;
+
+      background: #102238;
+    }
+
+    .nav-button.active {
+      color: #82b1ff;
+
+      border-color:
+        rgba(66, 133, 255, 0.18);
+
+      background:
+        linear-gradient(
+          90deg,
+          rgba(66, 133, 255, 0.18),
+          rgba(66, 133, 255, 0.05)
+        );
+    }
+
+    .nav-icon {
+      width: 25px;
+
+      height: 25px;
+
+      display: grid;
+
+      place-items: center;
+
+      border-radius: 7px;
+
+      background: #102138;
+
+      font-size: 11px;
+    }
+
+    .nav-button.active .nav-icon {
+      background:
+        rgba(66, 133, 255, 0.15);
+    }
+
+    .network-card {
+      margin-top: 24px;
+
+      padding: 14px;
+
+      border-radius: 13px;
+
+      border: 1px solid var(--border);
+
+      background:
+        linear-gradient(
+          145deg,
+          #0e1d30,
+          #0a1726
+        );
+    }
+
+    .network-status {
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      font-size: 11px;
+
+      font-weight: 800;
+    }
+
+    .online-dot {
+      width: 8px;
+      height: 8px;
+
+      border-radius: 50%;
+
+      background: var(--green);
+
+      box-shadow:
+        0 0 15px
+        rgba(34, 211, 148, 0.65);
+    }
+
+    .network-card small {
+      display: block;
+
+      margin-top: 7px;
+
+      color: var(--muted);
+
+      line-height: 1.5;
+
+      font-size: 9px;
+    }
+
+    /* =========================================================
+       TOPBAR
+       ========================================================= */
+
+    .topbar {
+      position: sticky;
+
+      top: 0;
+
+      z-index: 90;
+
+      min-height: 70px;
+
+      padding:
+        0 25px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 20px;
+
+      border-bottom: 1px solid var(--border);
+
+      background:
+        rgba(7, 17, 31, 0.83);
+
+      backdrop-filter:
+        blur(18px);
+    }
+
+    .topbar-title strong {
+      display: block;
+
+      font-size: 14px;
+    }
+
+    .topbar-title span {
+      display: block;
+
+      margin-top: 3px;
+
+      font-size: 10px;
+
+      color: var(--muted);
+    }
+
+    .topbar-right {
+      display: flex;
+
+      align-items: center;
+
+      gap: 10px;
+    }
+
+    .demo-mode {
+      padding:
+        9px 12px;
+
+      border-radius: 10px;
+
+      border:
+        1px solid var(--border);
+
+      color: white;
+
+      background: #0f2035;
+
+      outline: none;
+
+      font-size: 11px;
+
+      font-weight: 700;
+    }
+
+    .profile-pill {
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      padding:
+        6px 11px
+        6px 7px;
+
+      border-radius: 100px;
+
+      border: 1px solid var(--border);
+
+      background: #0d1d30;
+    }
+
+    .profile-avatar {
+      width: 29px;
+      height: 29px;
+
+      border-radius: 50%;
+
+      display: grid;
+
+      place-items: center;
+
+      background:
+        linear-gradient(
+          135deg,
+          #4285ff,
+          #815cff
+        );
+
+      font-size: 10px;
+
+      font-weight: 900;
+    }
+
+    .profile-copy {
+      line-height: 1.25;
+
+      font-size: 10px;
+    }
+
+    .profile-copy span {
+      display: block;
+
+      margin-top: 2px;
+
+      color: var(--muted);
+
+      font-size: 8px;
+
+      font-weight: 800;
+
+      letter-spacing: 0.08em;
+    }
+
+    .menu-button {
+      display: none;
+
+      width: 36px;
+      height: 36px;
+
+      border-radius: 9px;
+
+      border: 1px solid var(--border);
+
+      color: white;
+
+      background: #0e2035;
+    }
+
+    /* =========================================================
+       CONTENT
+       ========================================================= */
+
+    .content {
+      padding: 27px;
+    }
+
+    .page {
+      display: none;
+
+      animation:
+        pageFade
+        0.23s ease;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes pageFade {
+      from {
+        opacity: 0;
+
+        transform:
+          translateY(5px);
+      }
+
+      to {
+        opacity: 1;
+
+        transform:
+          translateY(0);
+      }
+    }
+
+    .page-header {
+      display: flex;
+
+      align-items: flex-start;
+
+      justify-content: space-between;
+
+      gap: 20px;
+
+      margin-bottom: 23px;
+    }
+
+    .eyebrow {
+      color: #5d82ad;
+
+      font-size: 9px;
+
+      font-weight: 900;
+
+      letter-spacing: 0.16em;
+    }
+
+    .page-header h1 {
+      margin-top: 5px;
+
+      font-size: 26px;
+
+      letter-spacing: -0.04em;
+    }
+
+    .page-header p {
+      margin-top: 6px;
+
+      max-width: 640px;
+
+      color: var(--muted);
+
+      font-size: 11px;
+
+      line-height: 1.6;
+    }
+
+    /* =========================================================
+       BUTTONS
+       ========================================================= */
+
+    .btn {
+      border-radius: 9px;
+
+      padding:
+        10px 13px;
+
+      border: 0;
+
+      font-size: 10px;
+
+      font-weight: 800;
+
+      transition: 0.16s ease;
+    }
+
+    .btn:hover {
+      transform:
+        translateY(-1px);
+    }
+
+    .btn-primary {
+      color: white;
+
+      background:
+        linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-dark)
+        );
+
+      box-shadow:
+        0 10px 25px
+        rgba(66, 133, 255, 0.17);
+    }
+
+    .btn-secondary {
+      color: #c7d5e4;
+
+      border: 1px solid var(--border);
+
+      background: #102238;
+    }
+
+    .btn-danger {
+      color: #ff9da7;
+
+      border:
+        1px solid
+        rgba(255, 100, 116, 0.2);
+
+      background:
+        rgba(255, 100, 116, 0.08);
+    }
+
+    /* =========================================================
+       BADGES
+       ========================================================= */
+
+    .badge {
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 5px;
+
+      padding:
+        5px 8px;
+
+      border-radius: 100px;
+
+      font-size: 8px;
+
+      font-weight: 900;
+
+      letter-spacing: 0.06em;
+
+      white-space: nowrap;
+    }
+
+    .badge-green {
+      color: #5ce6b3;
+
+      background: var(--green-soft);
+    }
+
+    .badge-blue {
+      color: #7eaeff;
+
+      background: var(--primary-soft);
+    }
+
+    .badge-orange {
+      color: #ffc56f;
+
+      background: var(--orange-soft);
+    }
+
+    .badge-red {
+      color: #ff99a3;
+
+      background: var(--red-soft);
+    }
+
+    /* =========================================================
+       KPI STATS
+       ========================================================= */
+
+    .stats-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(4, 1fr);
+
+      gap: 13px;
+
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      min-height: 116px;
+
+      padding: 16px;
+
+      border-radius: 14px;
+
+      border:
+        1px solid
+        var(--border);
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(15, 31, 51, 0.98),
+          rgba(9, 22, 37, 0.98)
+        );
+
+      box-shadow:
+        0 15px 45px
+        rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-top {
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      color: #70869f;
+
+      font-size: 8px;
+
+      font-weight: 900;
+
+      letter-spacing: 0.09em;
+    }
+
+    .stat-icon {
+      width: 30px;
+      height: 30px;
+
+      border-radius: 9px;
+
+      display: grid;
+
+      place-items: center;
+
+      color: #84afff;
+
+      background: #112a47;
+    }
+
+    .stat-value {
+      margin-top: 10px;
+
+      font-size: 24px;
+
+      font-weight: 900;
+
+      letter-spacing: -0.04em;
+    }
+
+    .stat-footer {
+      margin-top: 4px;
+
+      color: var(--muted);
+
+      font-size: 9px;
+    }
+
+    /* =========================================================
+       CARDS
+       ========================================================= */
+
+    .card {
+      overflow: hidden;
+
+      border-radius: 14px;
+
+      border: 1px solid var(--border);
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(14, 29, 48, 0.98),
+          rgba(9, 21, 35, 0.98)
+        );
+
+      box-shadow:
+        0 18px 50px
+        rgba(0, 0, 0, 0.09);
+    }
+
+    .card-header {
+      min-height: 58px;
+
+      padding:
+        14px 16px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 10px;
+
+      border-bottom:
+        1px solid
+        var(--border-soft);
+    }
+
+    .card-header h2 {
+      font-size: 13px;
+    }
+
+    .card-header p {
+      margin-top: 3px;
+
+      color: var(--muted);
+
+      font-size: 9px;
+    }
+
+    .card-body {
+      padding: 16px;
+    }
+
+    .grid-main {
+      display: grid;
+
+      grid-template-columns:
+        1.45fr 1fr;
+
+      gap: 15px;
+
+      margin-bottom: 15px;
+    }
+
+    .grid-two {
+      display: grid;
+
+      grid-template-columns:
+        1fr 1fr;
+
+      gap: 15px;
+
+      margin-bottom: 15px;
+    }
+
+    /* =========================================================
+       CAMPAIGN / TFN
+       ========================================================= */
+
+    .campaign-name {
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 10px;
+    }
+
+    .campaign-name h3 {
+      font-size: 17px;
+
+      letter-spacing: -0.03em;
+    }
+
+    .campaign-name small {
+      display: block;
+
+      margin-top: 4px;
+
+      color: var(--muted);
+
+      font-size: 9px;
+    }
+
+    .tfn-panel {
+      margin-top: 15px;
+
+      padding: 15px;
+
+      border-radius: 12px;
+
+      border: 1px solid #1b3858;
+
+      background:
+        linear-gradient(
+          145deg,
+          #081726,
+          #0a1b2e
+        );
+    }
+
+    .tfn-label {
+      color: #607b99;
+
+      font-size: 8px;
+
+      font-weight: 900;
+
+      letter-spacing: 0.13em;
+    }
+
+    .tfn-number {
+      margin-top: 5px;
+
+      font-size: 23px;
+
+      font-weight: 900;
+
+      letter-spacing: -0.02em;
+    }
+
+    .expiry-line {
+      margin-top: 13px;
+
+      padding-top: 11px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      border-top: 1px solid #163452;
+    }
+
+    .expiry-line span:first-child {
+      color: var(--muted);
+
+      font-size: 9px;
+    }
+
+    .expiry-countdown {
+      color: #ffc168;
+
+      font-size: 11px;
+
+      font-weight: 900;
+
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace;
+    }
+
+    /* =========================================================
+       PROGRESS
+       ========================================================= */
+
+    .progress-row {
+      margin-bottom: 17px;
+    }
+
+    .progress-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .progress-head {
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      margin-bottom: 7px;
+
+      font-size: 10px;
+    }
+
+    .progress-head span {
+      color: var(--muted);
+    }
+
+    .progress-track {
+      height: 7px;
+
+      overflow: hidden;
+
+      border-radius: 100px;
+
+      background: #071523;
+    }
+
+    .progress-fill {
+      height: 100%;
+
+      border-radius: inherit;
+    }
+
+    .progress-blue {
+      background:
+        linear-gradient(
+          90deg,
+          #4285ff,
+          #7a62ff
+        );
+    }
+
+    .progress-orange {
+      background:
+        linear-gradient(
+          90deg,
+          #ffa83d,
+          #ffd06a
+        );
+    }
+
+    .progress-green {
+      background:
+        linear-gradient(
+          90deg,
+          #21c98d,
+          #4de1ad
+        );
+    }
+
+    /* =========================================================
+       DESTINATIONS
+       ========================================================= */
+
+    .destination-row {
+      display: grid;
+
+      grid-template-columns:
+        34px 1fr auto;
+
+      align-items: center;
+
+      gap: 11px;
+
+      padding: 12px;
+
+      margin-bottom: 9px;
+
+      border-radius: 11px;
+
+      border: 1px solid #1c3654;
+
+      background: #0a192a;
+    }
+
+    .destination-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .destination-priority {
+      width: 34px;
+      height: 34px;
+
+      display: grid;
+
+      place-items: center;
+
+      border-radius: 9px;
+
+      color: #79aaff;
+
+      background: #102845;
+
+      font-size: 9px;
+
+      font-weight: 900;
+    }
+
+    .destination-copy strong {
+      display: block;
+
+      font-size: 11px;
+    }
+
+    .destination-copy span {
+      display: block;
+
+      margin-top: 3px;
+
+      color: var(--muted);
+
+      font-size: 8px;
+    }
+
+    /* =========================================================
+       LIVE CALL CARD
+       ========================================================= */
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+
+      display: inline-block;
+
+      border-radius: 50%;
+
+      background: var(--green);
+
+      animation:
+        livePulse
+        1.3s infinite;
+    }
+
+    @keyframes livePulse {
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    .detail-line {
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 12px;
+
+      padding:
+        10px 0;
+
+      border-bottom:
+        1px solid
+        var(--border-soft);
+
+      font-size: 10px;
+    }
+
+    .detail-line:last-child {
+      border-bottom: 0;
+    }
+
+    .detail-line span:first-child {
+      color: var(--muted);
+    }
+
+    /* =========================================================
+       TABLE
+       ========================================================= */
+
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+
+      min-width: 800px;
+
+      border-collapse: collapse;
+    }
+
+    th {
+      padding:
+        11px 13px;
+
+      border-bottom:
+        1px solid
+        var(--border);
+
+      color: #657c96;
+
+      font-size: 8px;
+
+      font-weight: 900;
+
+      letter-spacing: 0.09em;
+
+      text-align: left;
+
+      text-transform: uppercase;
+    }
+
+    td {
+      padding:
+        12px 13px;
+
+      border-bottom:
+        1px solid
+        var(--border-soft);
+
+      color: #c3d0de;
+
+      font-size: 10px;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    tbody tr:hover {
+      background:
+        rgba(66, 133, 255, 0.025);
+    }
+
+    .mono {
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace;
+    }
+
+    /* =========================================================
+       BILLING
+       ========================================================= */
+
+    .money-total {
+      margin-top: 6px;
+
+      font-size: 31px;
+
+      font-weight: 900;
+
+      letter-spacing: -0.05em;
+    }
+
+    .currency-label {
+      margin-top: 5px;
+
+      color: var(--green);
+
+      font-size: 9px;
+
+      font-weight: 800;
+    }
+
+    /* =========================================================
+       ADMIN
+       ========================================================= */
+
+    .admin-note {
+      margin-bottom: 15px;
+
+      padding: 14px;
+
+      border-radius: 12px;
+
+      border:
+        1px solid
+        rgba(141, 112, 255, 0.22);
+
+      color: #b7c5d6;
+
+      background:
+        linear-gradient(
+          90deg,
+          rgba(141, 112, 255, 0.09),
+          rgba(66, 133, 255, 0.06)
+        );
+
+      font-size: 10px;
+
+      line-height: 1.6;
+    }
+
+    .customer-row {
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 15px;
+
+      padding: 14px;
+
+      margin-bottom: 9px;
+
+      border-radius: 11px;
+
+      border: 1px solid var(--border);
+
+      background: #0a192a;
+    }
+
+    .customer-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .customer-row h3 {
+      font-size: 11px;
+    }
+
+    .customer-row p {
+      margin-top: 4px;
+
+      color: var(--muted);
+
+      font-size: 8px;
+    }
+
+    .customer-actions {
+      display: flex;
+
+      gap: 7px;
+    }
+
+    /* =========================================================
+       ROUTING ENGINE VISUAL
+       ========================================================= */
+
+    .routing-flow {
+      display: grid;
+
+      grid-template-columns:
+        repeat(7, auto);
+
+      align-items: center;
+
+      justify-content: center;
+
+      gap: 9px;
+
+      padding:
+        25px 15px;
+
+      overflow-x: auto;
+    }
+
+    .flow-node {
+      min-width: 110px;
+
+      padding: 12px;
+
+      border-radius: 11px;
+
+      border: 1px solid #1e3b5c;
+
+      text-align: center;
+
+      background: #0b1d30;
+    }
+
+    .flow-node strong {
+      display: block;
+
+      font-size: 10px;
+    }
+
+    .flow-node span {
+      display: block;
+
+      margin-top: 3px;
+
+      color: var(--muted);
+
+      font-size: 8px;
+    }
+
+    .flow-arrow {
+      color: #4e78a8;
+
+      font-size: 18px;
+    }
+
+    /* =========================================================
+       MODAL
+       ========================================================= */
+
+    .modal-backdrop {
+      position: fixed;
+
+      inset: 0;
+
+      z-index: 500;
+
+      display: grid;
+
+      place-items: center;
+
+      padding: 20px;
+
+      background:
+        rgba(1, 8, 18, 0.78);
+
+      backdrop-filter:
+        blur(8px);
+    }
+
+    .modal {
+      width: min(460px, 100%);
+
+      overflow: hidden;
+
+      border-radius: 15px;
+
+      border: 1px solid var(--border);
+
+      background: #0d1d30;
+
+      box-shadow: var(--shadow);
+    }
+
+    .modal-header {
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      padding: 15px;
+
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h3 {
+      font-size: 13px;
+    }
+
+    .close-modal {
+      width: 30px;
+      height: 30px;
+
+      border: 0;
+
+      border-radius: 8px;
+
+      color: white;
+
+      background: #142941;
+    }
+
+    .modal-body {
+      padding: 16px;
+    }
+
+    .field {
+      margin-bottom: 13px;
+    }
+
+    .field label {
+      display: block;
+
+      margin-bottom: 6px;
+
+      color: #8196ad;
+
+      font-size: 8px;
+
+      font-weight: 900;
+
+      letter-spacing: 0.08em;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+
+      padding: 10px;
+
+      border-radius: 9px;
+
+      border: 1px solid var(--border);
+
+      color: white;
+
+      outline: none;
+
+      background: #0a192a;
+
+      font-size: 10px;
+    }
+
+    .modal-footer {
+      display: flex;
+
+      justify-content: flex-end;
+
+      gap: 8px;
+
+      padding: 15px;
+
+      border-top:
+        1px solid
+        var(--border);
+    }
+
+    /* =========================================================
+       TOAST
+       ========================================================= */
+
+    .toast-container {
+      position: fixed;
+
+      right: 20px;
+
+      bottom: 20px;
+
+      z-index: 1000;
+
+      display: grid;
+
+      gap: 8px;
+    }
+
+    .toast {
+      min-width: 250px;
+
+      max-width: 330px;
+
+      padding: 12px 13px;
+
+      border-radius: 10px;
+
+      border: 1px solid var(--border);
+
+      color: #d7e2ee;
+
+      background: #102238;
+
+      box-shadow: var(--shadow);
+
+      font-size: 10px;
+
+      animation:
+        toastIn
+        0.2s ease;
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+
+        transform:
+          translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+
+        transform:
+          translateY(0);
+      }
+    }
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @media (max-width: 1050px) {
+      .stats-grid {
+        grid-template-columns:
+          repeat(2, 1fr);
+      }
+
+      .grid-main,
+      .grid-two {
+        grid-template-columns:
+          1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      :root {
+        --sidebar-width: 250px;
+      }
+
+      .sidebar {
+        transform:
+          translateX(-105%);
+
+        transition:
+          0.24s ease;
+
+        box-shadow:
+          20px 0 50px
+          rgba(0, 0, 0, 0.45);
+      }
+
+      .sidebar.open {
+        transform:
+          translateX(0);
+      }
+
+      .main {
+        margin-left: 0;
+      }
+
+      .menu-button {
+        display: block;
+      }
+
+      .topbar {
+        padding:
+          0 14px;
+      }
+
+      .topbar-title {
+        display: none;
+      }
+
+      .content {
+        padding: 16px;
+      }
+
+      .page-header {
+        flex-direction: column;
+      }
+
+      .profile-copy {
+        display: none;
+      }
+
+      .customer-row {
+        align-items: flex-start;
+
+        flex-direction: column;
+      }
+
+      .routing-flow {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid {
+        grid-template-columns:
+          1fr;
+      }
+
+      .tfn-number {
+        font-size: 20px;
+      }
+
+      .demo-mode {
+        max-width: 140px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- =======================================================
+       SIDEBAR
+       ======================================================= -->
+
+  <aside
+    class="sidebar"
+    id="sidebar"
+  >
+
+    <div class="brand">
+
+      <div class="brand-logo">
+        NX
+      </div>
+
+      <div class="brand-copy">
+
+        <strong>
+          NX Voice
+        </strong>
+
+        <span>
+          FORWARDING PORTAL
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <div class="sidebar-label">
+      MANAGEMENT
+    </div>
+
+
+    <button
+      class="nav-button active"
+      data-page="dashboard"
+    >
+
+      <span class="nav-icon">
+        ◫
+      </span>
+
+      Dashboard
+
+    </button>
+
+
+    <button
+      class="nav-button"
+      data-page="campaigns"
+    >
+
+      <span class="nav-icon">
+        ◉
+      </span>
+
+      Campaigns
+
+    </button>
+
+
+    <button
+      class="nav-button"
+      data-page="numbers"
+    >
+
+      <span class="nav-icon">
+        #
+      </span>
+
+      TFN Numbers
+
+    </button>
+
+
+    <button
+      class="nav-button"
+      data-page="forwarding"
+    >
+
+      <span class="nav-icon">
+        ↗
+      </span>
+
+      Forwarding
+
+    </button>
+
+
+    <div class="sidebar-label">
+      MONITORING
+    </div>
+
+
+    <button
+      class="nav-button"
+      data-page="live"
+    >
+
+      <span class="nav-icon">
+        ●
+      </span>
+
+      Live Calls
+
+    </button>
+
+
+    <button
+      class="nav-button"
+      data-page="cdr"
+    >
+
+      <span class="nav-icon">
+        ≡
+      </span>
+
+      CDR Reports
+
+    </button>
+
+
+    <button
+      class="nav-button"
+      data-page="billing"
+    >
+
+      <span class="nav-icon">
+        $
+      </span>
+
+      Billing
+
+    </button>
+
+
+    <div class="sidebar-label admin-only">
+      ADMIN
+    </div>
+
+
+    <button
+      class="nav-button admin-only"
+      data-page="customers"
+    >
+
+      <span class="nav-icon">
+        ♙
+      </span>
+
+      Customers
+
+    </button>
+
+
+    <button
+      class="nav-button admin-only"
+      data-page="monitoring"
+    >
+
+      <span class="nav-icon">
+        ◈
+      </span>
+
+      System Monitor
+
+    </button>
+
+
+    <div class="network-card">
+
+      <div class="network-status">
+
+        <span class="online-dot"></span>
+
+        Voice Network Online
+
+      </div>
+
+      <small>
+        Demo environment.<br>
+        Real Telnyx routing is not connected yet.
+      </small>
+
+    </div>
+
+  </aside>
+
+
+  <!-- =======================================================
+       MAIN
+       ======================================================= -->
+
+  <main class="main">
+
+
+    <!-- TOPBAR -->
+
+    <header class="topbar">
+
+      <button
+        class="menu-button"
+        id="menuButton"
+        type="button"
+      >
+        ☰
+      </button>
+
+
+      <div class="topbar-title">
+
+        <strong>
+          Forwarding Management Portal
+        </strong>
+
+        <span>
+          Managed voice routing • No browser dialer
+        </span>
+
+      </div>
+
+
+      <div class="topbar-right">
+
+        <select
+          class="demo-mode"
+          id="demoMode"
+        >
+
+          <option value="customer">
+            Customer Demo
+          </option>
+
+          <option value="admin">
+            Admin Demo
+          </option>
+
+        </select>
+
+
+        <div class="profile-pill">
+
+          <div class="profile-avatar">
+            NX
+          </div>
+
+          <div class="profile-copy">
+
+            Demo Account
+
+            <span id="roleLabel">
+              CUSTOMER
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         CONTENT
+         ===================================================== -->
+
+    <div class="content">
+
+
+      <!-- ===================================================
+           DASHBOARD
+           =================================================== -->
+
+      <section
+        class="page active"
+        id="dashboard"
+      >
+
+        <div class="page-header">
+
+          <div>
+
+            <div class="eyebrow">
+              FORWARDING MANAGEMENT
+            </div>
+
+            <h1>
+              Campaign Overview
+            </h1>
+
+            <p>
+              Monitor your current toll-free number, forwarding
+              destinations, concurrency, daily call CAP,
+              minute usage and live call activity.
+            </p>
+
+          </div>
+
+
+          <button
+            class="btn btn-primary"
+            id="replacementButton"
+          >
+            Request TFN Replacement
+          </button>
+
+        </div>
+
+
+        <!-- STATS -->
+
+        <div class="stats-grid">
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              ACTIVE TFN
+
+              <div class="stat-icon">
+                #
+              </div>
+
+            </div>
+
+            <div class="stat-value">
+              1
+            </div>
+
+            <div class="stat-footer">
+              Current number is routing normally
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              LIVE CALLS
+
+              <div class="stat-icon">
+                ●
+              </div>
+
+            </div>
+
+            <div
+              class="stat-value"
+              style="color: var(--green)"
+            >
+              1
+            </div>
+
+            <div class="stat-footer">
+              1 of 2 concurrent slots used
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              DAILY CAP
+
+              <div class="stat-icon">
+                ✓
+              </div>
+
+            </div>
+
+            <div class="stat-value">
+              14 / 20
+            </div>
+
+            <div class="stat-footer">
+              6 qualified calls remaining
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              MINUTES
+
+              <div class="stat-icon">
+                ◷
+              </div>
+
+            </div>
+
+            <div class="stat-value">
+              327
+            </div>
+
+            <div class="stat-footer">
+              327 of 500 minutes remaining
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- MAIN GRID -->
+
+        <div class="grid-main">
+
+
+          <!-- ACTIVE CAMPAIGN -->
+
+          <div class="card">
+
+            <div class="card-header">
+
+              <div>
+
+                <h2>
+                  Active Campaign
+                </h2>
+
+                <p>
+                  Current forwarding configuration
+                </p>
+
+              </div>
+
+              <span class="badge badge-green">
+                ACTIVE
+              </span>
+
+            </div>
+
+
+            <div class="card-body">
+
+              <div class="campaign-name">
+
+                <div>
+
+                  <h3>
+                    Shopify Marketing Calls
+                  </h3>
+
+                  <small>
+                    Campaign ID • CMP-10027
+                  </small>
+
+                </div>
+
+              </div>
+
+
+              <div class="tfn-panel">
+
+                <div class="tfn-label">
+                  CURRENT TOLL-FREE NUMBER
+                </div>
+
+                <div class="tfn-number">
+                  +1 (833) 555-0198
+                </div>
+
+
+                <div class="expiry-line">
+
+                  <span>
+                    Routing expires in
+                  </span>
+
+                  <strong
+                    class="expiry-countdown"
+                    id="expiryCountdown"
+                  >
+                    18:42:16
+                  </strong>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- DAILY USAGE -->
+
+          <div class="card">
+
+            <div class="card-header">
+
+              <div>
+
+                <h2>
+                  Daily Usage
+                </h2>
+
+                <p>
+                  Live campaign limits
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div class="card-body">
+
+              <div class="progress-row">
+
+                <div class="progress-head">
+
+                  <span>
+                    Concurrent Calls
+                  </span>
+
+                  <strong>
+                    1 / 2 CC
+                  </strong>
+
+                </div>
+
+                <div class="progress-track">
+
+                  <div
+                    class="progress-fill progress-blue"
+                    style="width: 50%"
+                  ></div>
+
+                </div>
+
+              </div>
+
+
+              <div class="progress-row">
+
+                <div class="progress-head">
+
+                  <span>
+                    Qualified Call CAP
+                  </span>
+
+                  <strong>
+                    14 / 20
+                  </strong>
+
+                </div>
+
+                <div class="progress-track">
+
+                  <div
+                    class="progress-fill progress-orange"
+                    style="width: 70%"
+                  ></div>
+
+                </div>
+
+              </div>
+
+
+              <div class="progress-row">
+
+                <div class="progress-head">
+
+                  <span>
+                    Minute Bucket
+                  </span>
+
+                  <strong>
+                    327 / 500
+                  </strong>
+
+                </div>
+
+                <div class="progress-track">
+
+                  <div
+                    class="progress-fill progress-green"
+                    style="width: 65.4%"
+                  ></div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- SECOND ROW -->
+
+        <div class="grid-two">
+
+
+          <!-- DESTINATIONS -->
+
+          <div class="card">
+
+            <div class="card-header">
+
+              <div>
+
+                <h2>
+                  Forwarding Destinations
+                </h2>
+
+                <p>
+                  Priority overflow routing
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div class="card-body">
+
+
+              <div class="destination-row">
+
+                <div class="destination-priority">
+                  01
+                </div>
+
+                <div class="destination-copy">
+
+                  <strong>
+                    +1 (786) 555-0128
+                  </strong>
+
+                  <span>
+                    Primary • 20 sec timeout
+                  </span>
+
+                </div>
+
+                <span class="badge badge-green">
+                  AVAILABLE
+                </span>
+
+              </div>
+
+
+              <div class="destination-row">
+
+                <div class="destination-priority">
+                  02
+                </div>
+
+                <div class="destination-copy">
+
+                  <strong>
+                    +1 (305) 555-0181
+                  </strong>
+
+                  <span>
+                    Secondary • 20 sec timeout
+                  </span>
+
+                </div>
+
+                <span class="badge badge-orange">
+                  BUSY
+                </span>
+
+              </div>
+
+
+              <div class="destination-row">
+
+                <div class="destination-priority">
+                  03
+                </div>
+
+                <div class="destination-copy">
+
+                  <strong>
+                    +1 (646) 555-0144
+                  </strong>
+
+                  <span>
+                    Backup Destination
+                  </span>
+
+                </div>
+
+                <span class="badge badge-blue">
+                  STANDBY
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- LIVE CALL -->
+
+          <div class="card">
+
+            <div class="card-header">
+
+              <div>
+
+                <h2>
+                  Current Live Call
+                </h2>
+
+                <p>
+                  Real-time forwarding activity
+                </p>
+
+              </div>
+
+              <span class="badge badge-green">
+
+                <span class="live-dot"></span>
+
+                CONNECTED
+
+              </span>
+
+            </div>
+
+
+            <div class="card-body">
+
+              <div class="detail-line">
+
+                <span>
+                  Incoming TFN
+                </span>
+
+                <strong>
+                  +1 833 555 0198
+                </strong>
+
+              </div>
+
+
+              <div class="detail-line">
+
+                <span>
+                  Caller
+                </span>
+
+                <strong>
+                  +1 917 555 0102
+                </strong>
+
+              </div>
+
+
+              <div class="detail-line">
+
+                <span>
+                  Destination
+                </span>
+
+                <strong>
+                  +1 786 555 0128
+                </strong>
+
+              </div>
+
+
+              <div class="detail-line">
+
+                <span>
+                  Connected Duration
+                </span>
+
+                <strong id="dashboardCallTimer">
+                  04:21
+                </strong>
+
+              </div>
+
+
+              <div class="detail-line">
+
+                <span>
+                  CC Slot
+                </span>
+
+                <strong>
+                  1 / 2
+                </strong>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ROUTING FLOW -->
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <div>
+
+              <h2>
+                Routing Flow
+              </h2>
+
+              <p>
+                Incoming call forwarding sequence
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="routing-flow">
+
+            <div class="flow-node">
+
+              <strong>
+                Incoming TFN
+              </strong>
+
+              <span>
+                +1 833...
+              </span>
+
+            </div>
+
+
+            <span class="flow-arrow">
+              →
+            </span>
+
+
+            <div class="flow-node">
+
+              <strong>
+                Limit Check
+              </strong>
+
+              <span>
+                CC / CAP / Wallet
+              </span>
+
+            </div>
+
+
+            <span class="flow-arrow">
+              →
+            </span>
+
+
+            <div class="flow-node">
+
+              <strong>
+                Primary
+              </strong>
+
+              <span>
+                Destination #1
+              </span>
+
+            </div>
+
+
+            <span class="flow-arrow">
+              →
+            </span>
+
+
+            <div class="flow-node">
+
+              <strong>
+                Overflow
+              </strong>
+
+              <span>
+                Secondary / Backup
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           CAMPAIGNS
+           =================================================== -->
+
+      <section
+        class="page"
+        id="campaigns"
+      >
+
+        <div class="page-header">
+
+          <div>
+
+            <div class="eyebrow">
+              CAMPAIGN CONTROL
+            </div>
+
+            <h1>
+              Campaigns
+            </h1>
+
+            <p>
+              View campaign TFNs, limits, forwarding status
+              and current usage.
+            </p>
+
+          </div>
+
+
+          <button
+            class="btn btn-primary admin-only"
+            id="newCampaignButton"
+          >
+            + New Campaign
+          </button>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="table-scroll">
+
+            <table>
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    Campaign
+                  </th>
+
+                  <th>
+                    TFN
+                  </th>
+
+                  <th>
+                    CC
+                  </th>
+
+                  <th>
+                    CAP
+                  </th>
+
+                  <th>
+                    Minutes
+                  </th>
+
+                  <th>
+                    Working Hours
+                  </th>
+
+                  <th>
+                    Status
+                  </th>
+
+                </tr>
+
+              </thead>
+
+
+              <tbody>
+
+                <tr>
+
+                  <td>
+                    <strong>
+                      Shopify Marketing Calls
+                    </strong>
+                  </td>
+
+                  <td class="mono">
+                    +1 833 555 0198
+                  </td>
+
+                  <td>
+                    2
+                  </td>
+
+                  <td>
+                    14 / 20
+                  </td>
+
+                  <td>
+                    327 / 500
+                  </td>
+
+                  <td>
+                    09:00 – 21:00 EST
+                  </td>
+
+                  <td>
+
+                    <span class="badge badge-green">
+                      ACTIVE
+                    </span>
+
+                  </td>
+
+                </tr>
+
+
+                <tr>
+
+                  <td>
+                    <strong>
+                      Insurance Leads
+                    </strong>
+                  </td>
+
+                  <td>
+                    Awaiting TFN
+                  </td>
+
+                  <td>
+                    2
+                  </td>
+
+                  <td>
+                    0 / 20
+                  </td>
+
+                  <td>
+                    500 / 500
+                  </td>
+
+                  <td>
+                    10:00 – 20:00 EST
+                  </td>
+
+                  <td>
+
+                    <span class="badge badge-orange">
+                      PAUSED
+                    </span>
+
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           NUMBERS
+           =================================================== -->
+
+      <section
+        class="page"
+        id="numbers"
+      >
+
+        <div class="page-header">
+
+          <div>
+
+            <div class="eyebrow">
+              NUMBER MANAGEMENT
+            </div>
+
+            <h1>
+              TFN Numbers
+            </h1>
+
+            <p>
+              Temporary toll-free number allocations,
+              expiration, quarantine and health status.
+            </p>
+
+          </div>
+
+
+          <button
+            class="btn btn-primary admin-only"
+            id="allocateButton"
+          >
+            Allocate TFN
+          </button>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="table-scroll">
+
+            <table>
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    TFN
+                  </th>
+
+                  <th>
+                    Campaign
+                  </th>
+
+                  <th>
+                    Activated
+                  </th>
+
+                  <th>
+                    Expiry
+                  </th>
+
+                  <th>
+                    Health
+                  </th>
+
+                  <th>
+                    Status
+                  </th>
+
+                </tr>
+
+              </thead>
+
+
+              <tbody>
+
+                <tr>
+
+                  <td class="mono">
+
+                    <strong>
+                      +1 (833) 555-0198
+                    </strong>
+
+                  </td>
+
+                  <td>
+                    Shopify Marketing Calls
+                  </td>
+
+                  <td>
+                    17 Aug 2026<br>
+                    10:00 AM
+                  </td>
+
+                  <td>
+                    18 Aug 2026<br>
+                    10:00 AM
+                  </td>
+
+                  <td>
+
+                    <span class="badge badge-green">
+                      HEALTHY
+                    </span>
+
+                  </td>
+
+                  <td>
+
+                    <span class="badge badge-green">
+                      ACTIVE
+                    </span>
+
+                  </td>
+
+                </tr>
+
+
+                <tr>
+
+                  <td class="mono">
+                    +1 (844) 555-0184
+                  </td>
+
+                  <td>
+                    Previous Allocation
+                  </td>
+
+                  <td>
+                    16 Aug 2026
+                  </td>
+
+                  <td>
+                    17 Aug 2026
+                  </td>
+
+                  <td>
+
+                    <span class="badge badge-blue">
+                      QUARANTINE
+                    </span>
+
+                  </td>
+
+                  <td>
+
+                    <span class="badge badge-orange">
+                      EXPIRED
+                    </span>
+
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           FORWARDING
+           =================================================== -->
+
+      <section
+        class="page"
+        id="forwarding"
+      >
+
+        <div class="page-header">
+
+          <div>
+
+            <div class="eyebrow">
+              ROUTING ENGINE
+            </div>
+
+            <h1>
+              Forwarding Rules
+            </h1>
+
+            <p>
+              Configure destination priority, overflow
+              routing and campaign limits.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="grid-two">
+
+
+          <div class="card">
+
+            <div class="card-header">
+
+              <div>
+
+                <h2>
+                  Destination Priority
+                </h2>
+
+                <p>
+                  Forwarding failover sequence
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div class="card-body">
+
+
+              <div class="destination-row">
+
+                <div class="destination-priority">
+                  01
+                </div>
+
+                <div class="destination-copy">
+
+                  <strong>
+                    +1 (786) 555-0128
+                  </strong>
+
+                  <span>
+                    Primary • Ring 20 seconds
+                  </span>
+
+                </div>
+
+                <span class="badge badge-green">
+                  ACTIVE
+                </span>
+
+              </div>
+
+
+              <div class="destination-row">
+
+                <div class="destination-priority">
+                  02
+                </div>
+
+                <div class="destination-copy">
+
+                  <strong>
+                    +1 (305) 555-0181
+                  </strong>
+
+                  <span>
+                    Secondary • Ring 20 seconds
+                  </span>
+
+                </div>
+
+                <span class="badge badge-green">
+                  ACTIVE
+                </span>
+
+              </div>
+
+
+              <div class="destination-row">
+
+                <div class="destination-priority">
+                  03
+                </div>
+
+                <div class="destination-copy">
+
+                  <strong>
+                    +1 (646) 555-0144
+                  </strong>
+
+                  <span>
+                    Backup destination
+                  </span>
+
+                </div>
+
+                <span class="badge badge-blue">
+                  BACKUP
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <div class="card-header">
+
+              <div>
+
+                <h2>
+                  Campaign Limits
+                </h2>
+
+                <p>
+                  Enforcement rules
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div class="card-body">
+
+              <div class="detail-line">
+
+                <span>
+                  Concurrent Calls
+                </span>
+
+                <strong>
+                  2 CC
+                </strong>
+
+              </div>
+
+              <div class="detail-line">
+
+                <span>
+                  Daily Qualified CAP
+                </span>
+
+                <strong>
+                  20 Calls
+                </strong>
+
+              </div>
+
+              <div class="detail-line">
+
+                <span>
+                  Daily Minute Bucket
+                </span>
+
+                <strong>
+                  500 Minutes
+                </strong>
+
+              </div>
+
+              <div class="detail-line">
+
+                <span>
+                  Ring Timeout
+                </span>
+
+                <strong>
+                  20 Seconds
+                </strong>
+
+              </div>
+
+              <div class="detail-line">
+
+                <span>
+                  Maximum Call Duration
+                </span>
+
+                <strong>
+                  60 Minutes
+                </strong>
+
+              </div>
+
+              <div class="detail-line">
+
+                <span>
+                  Allowed Forwarding
+                </span>
+
+                <strong>
+                  USA / Canada
+                </strong>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           LIVE CALLS
+           =================================================== -->
+
+      <section
+        class="page"
+        id="live"
+      >
+
+        <div class="page-header">
+
+          <div>
+
+            <div class="eyebrow">
+              REAL-TIME MONITORING
+            </div>
+
+            <h1>
+              Live Calls
+            </h1>
+
+            <p>
+              Monitor current active forwarding sessions.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="table-scroll">
+
+            <table>
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    Status
+                  </th>
+
+                  <th>
+                    Incoming TFN
+                  </th>
+
+                  <th>
+                    Caller
+                  </th>
+
+                  <th>
+                    Destination
+                  </th>
+
+                  <th>
+                    Campaign
+                  </th>
+
+                  <th>
+                    Duration
+                  </th>
+
+                  <th>
+                    CC Slot
+                  </th>
+
+                </tr>
+
+              </thead>
+
+
+              <tbody>
+
+                <tr>
+
+                  <td>
+
+                    <span class="badge badge-green">
+
+                      <span class="live-dot"></span>
+
+                      CONNECTED
+
+                    </span>
+
+                  </td>
+
+                  <td class="mono">
+                    +18335550198
+                  </td>
+
+                  <td class="mono">
+                    +19175550102
+                  </td>
+
+                  <td class="mono">
+                    +17865550128
+                  </td>
+
+                  <td>
+                    Shopify Marketing Calls
+                  </td>
+
+                  <td id="liveCallTimer">
+                    04:21
+                  </td>
+
+                  <td>
+                    1 / 2
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           CDR
+           =================================================== -->
+
+      <section
+        class="page"
+        id="cdr"
+      >
+
+        <div class="page-header">
+
+          <div>
+
+            <div class="eyebrow">
+              CALL DETAIL RECORDS
+            </div>
+
+            <h1>
+              CDR Reports
+            </h1>
+
+            <p>
+              Answered, missed and overflow call history
+              with billable usage.
+            </p>
+
+          </div>
+
+
+          <button
+            class="btn btn-secondary"
+            id="csvButton"
+          >
+            Download CSV
+          </button>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="table-scroll">
+
+            <table>
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    Call ID
+                  </th>
+
+                  <th>
+                    TFN
+                  </th>
+
+                  <th>
+                    Caller
+                  </th>
+
+                  <th>
+                    Destination
+                  </th>
+
+                  <th>
+                    Connected
+                  </th>
+
+                  <th>
+                    Billable
+                  </th>
+
+                  <th>
+                    Status
+                  </th>
+
+                  <th>
+                    Time
+                  </th>
+
+                </tr>
+
+              </thead>
+
+
+              <tbody>
+
+                <tr>
+
+                  <td>
+                    CL-28471
+                  </td>
+
+                  <td class="mono">
+                    +18335550198
+                  </td>
+
+                  <td class="mono">
+                    +19175550102
+                  </td>
+
+                  <td class="mono">
+                    +17865550128
+                  </td>
+
+                  <td>
+                    04:08
+                  </td>
+
+                  <td>
+                    5 min
+                  </td>
+
+                  <td>
+
+                    <span class="badge badge-green">
+                      ANSWERED
+                    </span>
+
+                  </td>
+
+                  <td>
+                    14:12
+                  </td>
+
+                </tr>
+
+
+                <tr>
+
+                  <td>
+                    CL-28470
+                  </td>
+
+                  <td class="mono">
+                    +18335550198
+                  </td>
+
+                  <td class="mono">
+                    +12125550186
+                  </td>
+
+                  <td class="mono">
+                    +13055550181
+                  </td>
+
+                  <td>
+                    00:00
+                  </td>
+
+                  <td>
+                    0 min
+                  </td>
+
+                  <td>
+
+                    <span class="badge badge-red">
+                      NO ANSWER
+                    </span>
+
+                  </td>
+
+                  <td>
+                    13:58
+                  </td>
+
+                </tr>
+
+
+                <tr>
+
+                  <td>
+                    CL-28469
+                  </td>
+
+                  <td class="mono">
+                    +18335550198
+                  </td>
+
+                  <td class="mono">
+                    +16465550133
+                  </td>
+
+                  <td class="mono">
+                    +17865550128
+                  </td>
+
+                  <td>
+                    08:41
+                  </td>
+
+                  <td>
+                    9 min
+                  </td>
+
+                  <td>
+
+                    <span class="badge badge-green">
+                      ANSWERED
+                    </span>
+
+                  </td>
+
+                  <td>
+                    13:31
+                  </td>
+
+                </tr>
+
+
+                <tr>
+
+                  <td>
+                    CL-28468
+                  </td>
+
+                  <td class="mono">
+                    +18335550198
+                  </td>
+
+                  <td class="mono">
+                    +13105550122
+                  </td>
+
+                  <td class="mono">
+                    +16465550144
+                  </td>
+
+                  <td>
+                    02:16
+                  </td>
+
+                  <td>
+                    3 min
+                  </td>
+
+                  <td>
+
+                    <span class="badge badge-blue">
+                      OVERFLOW
+                    </span>
+
+                  </td>
+
+                  <td>
+                    12:44
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           BILLING
+           =================================================== -->
+
+      <section
+        class="page"
+        id="billing"
+      >
+
+        <div class="page-header">
+
+          <div>
+
+            <div class="eyebrow">
+              ACCOUNT BILLING
+            </div>
+
+            <h1>
+              Billing
+            </h1>
+
+            <p>
+              Package billing, daily usage and subscription
+              information.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="grid-two">
+
+
+          <div class="card">
+
+            <div class="card-header">
+
+              <div>
+
+                <h2>
+                  Current Package
+                </h2>
+
+                <p>
+                  20-day managed forwarding package
+                </p>
+
+              </div>
+
+              <span class="badge badge-green">
+                ACTIVE
+              </span>
+
+            </div>
+
+
+            <div class="card-body">
+
+              <div class="detail-line">
+
+                <span>
+                  Daily New TFN
+                </span>
+
+                <strong>
+                  $20 × 20
+                </strong>
+
+              </div>
+
+              <div class="detail-line">
+
+                <span>
+                  Daily 500-Minute Bucket
+                </span>
+
+                <strong>
+                  $50 × 20
+                </strong>
+
+              </div>
+
+              <div class="detail-line">
+
+                <span>
+                  Monthly Portal Access
+                </span>
+
+                <strong>
+                  $60
+                </strong>
+
+              </div>
+
+
+              <div
+                style="
+                  margin-top: 18px;
+                  color: var(--muted);
+                  font-size: 8px;
+                  font-weight: 900;
+                  letter-spacing: 0.1em;
+                "
+              >
+                TOTAL PACKAGE
+              </div>
+
+              <div class="money-total">
+                $1,460
+              </div>
+
+              <div class="currency-label">
+                USDT / 20-DAY PACKAGE
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <div class="card-header">
+
+              <div>
+
+                <h2>
+                  Today's Allocation
+                </h2>
+
+                <p>
+                  Current service usage
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div class="card-body">
+
+              <div class="detail-line">
+
+                <span>
+                  TFN Allocation
+                </span>
+
+                <strong>
+                  $20.00
+                </strong>
+
+              </div>
+
+              <div class="detail-line">
+
+                <span>
+                  500-Minute Bucket
+                </span>
+
+                <strong>
+                  $50.00
+                </strong>
+
+              </div>
+
+              <div class="detail-line">
+
+                <span>
+                  Used Minutes
+                </span>
+
+                <strong>
+                  173
+                </strong>
+
+              </div>
+
+              <div class="detail-line">
+
+                <span>
+                  Remaining Minutes
+                </span>
+
+                <strong>
+                  327
+                </strong>
+
+              </div>
+
+              <div class="detail-line">
+
+                <span>
+                  Daily Package Charge
+                </span>
+
+                <strong>
+                  $70.00
+                </strong>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           ADMIN CUSTOMERS
+           =================================================== -->
+
+      <section
+        class="page"
+        id="customers"
+      >
+
+        <div class="page-header">
+
+          <div>
+
+            <div class="eyebrow">
+              ADMINISTRATION
+            </div>
+
+            <h1>
+              Customers
+            </h1>
+
+            <p>
+              Manage customer accounts, KYC status,
+              subscriptions and access.
+            </p>
+
+          </div>
+
+
+          <button
+            class="btn btn-primary"
+            id="createCustomerButton"
+          >
+            + Create Customer
+          </button>
+
+        </div>
+
+
+        <div class="admin-note">
+
+          <strong>
+            Admin Control Center
+          </strong>
+
+          <br>
+
+          Customers cannot independently change TFN allocation,
+          CC limits, daily CAP, minute balance or billing.
+          Administrative approval is required.
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <div>
+
+              <h2>
+                Managed Accounts
+              </h2>
+
+              <p>
+                Active and pending forwarding customers
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="card-body">
+
+
+            <div class="customer-row">
+
+              <div>
+
+                <h3>
+                  Alpha Marketing LLC
+                </h3>
+
+                <p>
+                  customer@alphamarketing.com •
+                  KYC Verified •
+                  Active package
+                </p>
+
+              </div>
+
+
+              <div class="customer-actions">
+
+                <button class="btn btn-secondary">
+                  Manage
+                </button>
+
+                <button class="btn btn-danger">
+                  Suspend
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <div class="customer-row">
+
+              <div>
+
+                <h3>
+                  Demo Leads Agency
+                </h3>
+
+                <p>
+                  admin@demoleads.com •
+                  KYC Pending •
+                  No active TFN
+                </p>
+
+              </div>
+
+
+              <div class="customer-actions">
+
+                <button class="btn btn-secondary">
+                  Manage
+                </button>
+
+                <button class="btn btn-danger">
+                  Suspend
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           SYSTEM MONITOR
+           =================================================== -->
+
+      <section
+        class="page"
+        id="monitoring"
+      >
+
+        <div class="page-header">
+
+          <div>
+
+            <div class="eyebrow">
+              SYSTEM MONITORING
+            </div>
+
+            <h1>
+              Voice Operations
+            </h1>
+
+            <p>
+              Admin-level monitoring for live sessions,
+              usage and estimated profitability.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="stats-grid">
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+              ACTIVE CUSTOMERS
+            </div>
+
+            <div class="stat-value">
+              1
+            </div>
+
+            <div class="stat-footer">
+              1 currently routing
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+              ACTIVE CALLS
+            </div>
+
+            <div class="stat-value">
+              1
+            </div>
+
+            <div class="stat-footer">
+              Voice session connected
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+              CUSTOMER REVENUE
+            </div>
+
+            <div class="stat-value">
+              $70
+            </div>
+
+            <div class="stat-footer">
+              Today's package charge
+            </div>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+              EST. CARRIER COST
+            </div>
+
+            <div class="stat-value">
+              $18.40
+            </div>
+
+            <div class="stat-footer">
+              Demo calculation only
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="table-scroll">
+
+            <table>
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    Customer
+                  </th>
+
+                  <th>
+                    Campaign
+                  </th>
+
+                  <th>
+                    TFN
+                  </th>
+
+                  <th>
+                    Live Calls
+                  </th>
+
+                  <th>
+                    CAP
+                  </th>
+
+                  <th>
+                    Minutes
+                  </th>
+
+                  <th>
+                    Revenue
+                  </th>
+
+                  <th>
+                    Est. Profit
+                  </th>
+
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                <tr>
+
+                  <td>
+                    Alpha Marketing LLC
+                  </td>
+
+                  <td>
+                    Shopify Marketing Calls
+                  </td>
+
+                  <td class="mono">
+                    +18335550198
+                  </td>
+
+                  <td>
+                    1 / 2
+                  </td>
+
+                  <td>
+                    14 / 20
+                  </td>
+
+                  <td>
+                    327 / 500
+                  </td>
+
+                  <td>
+                    $70.00
+                  </td>
+
+                  <td style="color: var(--green)">
+                    $51.60
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+    </div>
+
+  </main>
+
+</div>
+
+
+<!-- =========================================================
+     CREATE CUSTOMER MODAL
+     ========================================================= -->
+
+<div
+  class="modal-backdrop hidden"
+  id="customerModal"
+>
+
+  <div class="modal">
+
+    <div class="modal-header">
+
+      <h3>
+        Create Customer
+      </h3>
+
+      <button
+        class="close-modal"
+        data-close-modal
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="modal-body">
+
+      <div class="field">
+
+        <label>
+          CUSTOMER / BUSINESS NAME
+        </label>
+
+        <input
+          type="text"
+          placeholder="Example Marketing LLC"
+        />
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          LOGIN EMAIL
+        </label>
+
+        <input
+          type="email"
+          placeholder="customer@example.com"
+        />
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          KYC STATUS
+        </label>
+
+        <select>
+
+          <option>
+            Pending
+          </option>
+
+          <option>
+            Verified
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          PACKAGE
+        </label>
+
+        <select>
+
+          <option>
+            20 Day / $1,460
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <div class="modal-footer">
+
+      <button
+        class="btn btn-secondary"
+        data-close-modal
+      >
+        Cancel
+      </button>
+
+      <button
+        class="btn btn-primary"
+        id="saveCustomerButton"
+      >
+        Create Demo Account
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     TOASTS
+     ========================================================= -->
+
+<div
+  class="toast-container"
+  id="toastContainer"
+></div>
+
+
+<script>
+
+  /* =========================================================
+     ELEMENT REFERENCES
+     ========================================================= */
+
+  const sidebar =
+    document.getElementById("sidebar");
+
+  const menuButton =
+    document.getElementById("menuButton");
+
+  const navButtons =
+    document.querySelectorAll(".nav-button");
+
+  const pages =
+    document.querySelectorAll(".page");
+
+  const demoMode =
+    document.getElementById("demoMode");
+
+  const roleLabel =
+    document.getElementById("roleLabel");
+
+  const adminElements =
+    document.querySelectorAll(".admin-only");
+
+  const expiryCountdown =
+    document.getElementById("expiryCountdown");
+
+  const dashboardCallTimer =
+    document.getElementById("dashboardCallTimer");
+
+  const liveCallTimer =
+    document.getElementById("liveCallTimer");
+
+  const replacementButton =
+    document.getElementById("replacementButton");
+
+  const csvButton =
+    document.getElementById("csvButton");
+
+  const createCustomerButton =
+    document.getElementById("createCustomerButton");
+
+  const customerModal =
+    document.getElementById("customerModal");
+
+  const saveCustomerButton =
+    document.getElementById("saveCustomerButton");
+
+  const toastContainer =
+    document.getElementById("toastContainer");
+
+
+  /* =========================================================
+     NAVIGATION
+     ========================================================= */
+
+  navButtons.forEach((button) => {
+
+    button.addEventListener("click", () => {
+
+      const pageId =
+        button.dataset.page;
+
+      navButtons.forEach((item) =>
+        item.classList.remove("active")
+      );
+
+      button.classList.add("active");
+
+
+      pages.forEach((page) =>
+        page.classList.remove("active")
+      );
+
+      const targetPage =
+        document.getElementById(pageId);
+
+      if (targetPage) {
+        targetPage.classList.add("active");
+      }
+
+
+      sidebar.classList.remove("open");
+
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+
+    });
+
+  });
+
+
+  /* =========================================================
+     MOBILE MENU
+     ========================================================= */
+
+  menuButton.addEventListener(
+    "click",
+    () => {
+
+      sidebar.classList.toggle("open");
+
+    }
+  );
+
+
+  /* =========================================================
+     CUSTOMER / ADMIN DEMO MODE
+     ========================================================= */
+
+  function setDemoMode(mode) {
+
+    if (mode === "admin") {
+
+      adminElements.forEach((element) =>
+        element.classList.remove("hidden")
+      );
+
+      roleLabel.textContent =
+        "SUPERADMIN";
+
+      showToast(
+        "Admin demo mode enabled."
+      );
+
+    } else {
+
+      adminElements.forEach((element) =>
+        element.classList.add("hidden")
+      );
+
+      roleLabel.textContent =
+        "CUSTOMER";
+
+
+      const customersPage =
+        document.getElementById("customers");
+
+      const monitorPage =
+        document.getElementById("monitoring");
+
+
+      if (
+        customersPage.classList.contains("active") ||
+        monitorPage.classList.contains("active")
+      ) {
+
+        document
+          .querySelector(
+            '[data-page="dashboard"]'
+          )
+          .click();
+
+      }
+
+    }
+
+  }
+
+
+  demoMode.addEventListener(
+    "change",
+    () => {
+
+      setDemoMode(
+        demoMode.value
+      );
+
+    }
+  );
+
+
+  /* Default view */
+
+  setDemoMode("customer");
+
+
+  /* =========================================================
+     TFN EXPIRY COUNTDOWN
+     ========================================================= */
+
+  let expirySeconds =
+    (18 * 60 * 60) +
+    (42 * 60) +
+    16;
+
+
+  function formatHours(seconds) {
+
+    const hours =
+      Math.floor(
+        seconds / 3600
+      );
+
+    const minutes =
+      Math.floor(
+        (seconds % 3600) / 60
+      );
+
+    const secs =
+      seconds % 60;
+
+
+    return [
+      hours,
+      minutes,
+      secs
+    ]
+      .map(
+        value =>
+          String(value)
+            .padStart(2, "0")
+      )
+      .join(":");
+
+  }
+
+
+  setInterval(() => {
+
+    expirySeconds -= 1;
+
+
+    if (expirySeconds < 0) {
+      expirySeconds = 0;
+    }
+
+
+    expiryCountdown.textContent =
+      formatHours(
+        expirySeconds
+      );
+
+  }, 1000);
+
+
+  /* =========================================================
+     LIVE CALL TIMER
+     ========================================================= */
+
+  let liveSeconds =
+    (4 * 60) + 21;
+
+
+  function formatMinutes(seconds) {
+
+    const minutes =
+      Math.floor(
+        seconds / 60
+      );
+
+    const secs =
+      seconds % 60;
+
+
+    return (
+      String(minutes)
+        .padStart(2, "0") +
+      ":" +
+      String(secs)
+        .padStart(2, "0")
+    );
+
+  }
+
+
+  setInterval(() => {
+
+    liveSeconds += 1;
+
+    const time =
+      formatMinutes(
+        liveSeconds
+      );
+
+    dashboardCallTimer.textContent =
+      time;
+
+    liveCallTimer.textContent =
+      time;
+
+  }, 1000);
+
+
+  /* =========================================================
+     REPLACEMENT REQUEST DEMO
+     ========================================================= */
+
+  replacementButton.addEventListener(
+    "click",
+    () => {
+
+      showToast(
+        "TFN replacement request submitted for admin review."
+      );
+
+    }
+  );
+
+
+  /* =========================================================
+     CSV DOWNLOAD DEMO
+     ========================================================= */
+
+  csvButton.addEventListener(
+    "click",
+    () => {
+
+      const rows = [
+
+        [
+          "Call ID",
+          "TFN",
+          "Caller",
+          "Destination",
+          "Duration",
+          "Billable Minutes",
+          "Status",
+          "Time"
+        ],
+
+        [
+          "CL-28471",
+          "+18335550198",
+          "+19175550102",
+          "+17865550128",
+          "04:08",
+          "5",
+          "Answered",
+          "14:12"
+        ],
+
+        [
+          "CL-28470",
+          "+18335550198",
+          "+12125550186",
+          "+13055550181",
+          "00:00",
+          "0",
+          "No Answer",
+          "13:58"
+        ],
+
+        [
+          "CL-28469",
+          "+18335550198",
+          "+16465550133",
+          "+17865550128",
+          "08:41",
+          "9",
+          "Answered",
+          "13:31"
+        ]
+
+      ];
+
+
+      const csv =
+        rows
+          .map(
+            row =>
+              row
+                .map(
+                  cell =>
+                    `"${String(cell)
+                      .replaceAll(
+                        '"',
+                        '""'
+                      )}"`
+                )
+                .join(",")
+          )
+          .join("\n");
+
+
+      const blob =
+        new Blob(
+          [csv],
+          {
+            type:
+              "text/csv;charset=utf-8"
+          }
+        );
+
+
+      const link =
+        document.createElement("a");
+
+      link.href =
+        URL.createObjectURL(blob);
+
+      link.download =
+        "nx-voice-cdr-demo.csv";
+
+      document.body.appendChild(
+        link
+      );
+
+      link.click();
+
+      link.remove();
+
+      URL.revokeObjectURL(
+        link.href
+      );
+
+
+      showToast(
+        "Demo CDR CSV downloaded."
+      );
+
+    }
+  );
+
+
+  /* =========================================================
+     CUSTOMER MODAL
+     ========================================================= */
+
+  function openCustomerModal() {
+
+    customerModal.classList.remove(
+      "hidden"
+    );
+
+  }
+
+
+  function closeCustomerModal() {
+
+    customerModal.classList.add(
+      "hidden"
+    );
+
+  }
+
+
+  createCustomerButton?.addEventListener(
+    "click",
+    openCustomerModal
+  );
+
+
+  document
+    .querySelectorAll(
+      "[data-close-modal]"
+    )
+    .forEach((button) => {
+
+      button.addEventListener(
+        "click",
+        closeCustomerModal
+      );
+
+    });
+
+
+  customerModal.addEventListener(
+    "click",
+    (event) => {
+
+      if (
+        event.target ===
+        customerModal
+      ) {
+
+        closeCustomerModal();
+
+      }
+
+    }
+  );
+
+
+  saveCustomerButton.addEventListener(
+    "click",
+    () => {
+
+      closeCustomerModal();
+
+      showToast(
+        "Demo customer account created."
+      );
+
+    }
+  );
+
+
+  /* =========================================================
+     ADMIN ACTION DEMOS
+     ========================================================= */
+
+  document
+    .getElementById(
+      "newCampaignButton"
+    )
+    ?.addEventListener(
+      "click",
+      () => {
+
+        showToast(
+          "Campaign creation form will be added with backend integration."
+        );
+
+      }
+    );
+
+
+  document
+    .getElementById(
+      "allocateButton"
+    )
+    ?.addEventListener(
+      "click",
+      () => {
+
+        showToast(
+          "Telnyx TFN inventory search will be connected here."
+        );
+
+      }
+    );
+
+
+  /* =========================================================
+     TOAST
+     ========================================================= */
+
+  function showToast(message) {
+
+    const toast =
+      document.createElement(
+        "div"
+      );
+
+    toast.className =
+      "toast";
+
+    toast.textContent =
+      message;
+
+    toastContainer.appendChild(
+      toast
+    );
+
+
+    setTimeout(() => {
+
+      toast.style.opacity =
+        "0";
+
+      toast.style.transform =
+        "translateY(8px)";
+
+      toast.style.transition =
+        "0.2s ease";
+
+
+      setTimeout(
+        () =>
+          toast.remove(),
+        220
+      );
+
+    }, 2800);
+
+  }
+
+</script>
+
+</body>
+</html>

@@ -7,6 +7,73 @@ const fmtMinutes = (seconds) => {
 };
 let currentDid = null;
 
+function ensureMobileAdminNav() {
+  if (document.getElementById('nxMobileMenuBtn')) return;
+  const sidebar = document.querySelector('.sidebar');
+  const top = document.querySelector('.top');
+  if (!sidebar || !top) return;
+
+  const style = document.createElement('style');
+  style.id = 'nxMobileAdminStyles';
+  style.textContent = `
+    .nx-mobile-menu-btn{display:none!important;align-items:center;justify-content:center;width:42px;height:42px;padding:0;border-radius:12px;flex:0 0 auto}
+    .nx-mobile-menu-btn svg{width:21px;height:21px}
+    .nx-mobile-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.48);backdrop-filter:blur(2px);z-index:1001}
+    @media(max-width:760px){
+      .nx-mobile-menu-btn{display:inline-flex!important}
+      .sidebar{display:flex!important;width:min(82vw,300px)!important;transform:translateX(-105%);transition:transform .22s ease;z-index:1002!important;box-shadow:20px 0 45px rgba(2,6,23,.25);overflow-y:auto}
+      .sidebar.nx-mobile-open{transform:translateX(0)}
+      .nx-mobile-backdrop.nx-mobile-open{display:block}
+      body.nx-menu-open{overflow:hidden}
+      .top{justify-content:flex-start!important;gap:10px}
+      .top h1{margin-right:auto!important}
+      .top .actions{gap:6px}
+      .top .actions .badge{display:none}
+      .top .actions .btn.primary{padding:9px 10px;font-size:12px;white-space:nowrap}
+      .sidebar .nav{padding:12px;font-size:13px}
+    }
+  `;
+  document.head.appendChild(style);
+
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'btn nx-mobile-menu-btn';
+  button.id = 'nxMobileMenuBtn';
+  button.setAttribute('aria-label', 'Open admin menu');
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = '<i data-lucide="menu"></i>';
+  top.insertBefore(button, top.firstChild);
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'nx-mobile-backdrop';
+  backdrop.id = 'nxMobileBackdrop';
+  document.body.appendChild(backdrop);
+
+  const closeMenu = () => {
+    sidebar.classList.remove('nx-mobile-open');
+    backdrop.classList.remove('nx-mobile-open');
+    document.body.classList.remove('nx-menu-open');
+    button.setAttribute('aria-expanded', 'false');
+    button.innerHTML = '<i data-lucide="menu"></i>';
+    window.lucide?.createIcons?.();
+  };
+  const openMenu = () => {
+    sidebar.classList.add('nx-mobile-open');
+    backdrop.classList.add('nx-mobile-open');
+    document.body.classList.add('nx-menu-open');
+    button.setAttribute('aria-expanded', 'true');
+    button.innerHTML = '<i data-lucide="x"></i>';
+    window.lucide?.createIcons?.();
+  };
+
+  button.addEventListener('click', () => sidebar.classList.contains('nx-mobile-open') ? closeMenu() : openMenu());
+  backdrop.addEventListener('click', closeMenu);
+  sidebar.querySelectorAll('.nav[data-page]').forEach(nav => nav.addEventListener('click', closeMenu));
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeMenu(); });
+  window.addEventListener('resize', () => { if (window.innerWidth > 760) closeMenu(); });
+  window.lucide?.createIcons?.();
+}
+
 async function loadAdminData() {
   const [profilesRes, walletsRes, numbersRes, liveRes] = await Promise.all([
     supabase.from('profiles').select('id,email,full_name,role,status,max_concurrent_calls,created_at').eq('role','customer').order('created_at',{ascending:false}),
@@ -140,6 +207,7 @@ function openDid(number, profiles, reload) {
 
 export async function setupAdminPhase3() {
   if (!/admin\.html$/i.test(location.pathname)) return;
+  ensureMobileAdminNav();
   ensureManageModal();
   ensureDidModal();
   const body = document.getElementById('usersBody');
@@ -156,7 +224,7 @@ export async function setupAdminPhase3() {
     try {
       const data = await loadAdminData();
       if (stats.users) stats.users.textContent = data.profiles.length;
-      if (stats.tfns) stats.tfns.textContent = data.numbers.filter(n => n.enabled !== false).length;
+      if (stats.tfns) stats.tfns.textContent = data.numbers.filter(n => n.enabled !== false && !!n.user_id).length;
       if (stats.live) stats.live.textContent = data.live.length;
       const totalSeconds = [...data.wallets.values()].reduce((a,w)=>a+Number(w.remaining_seconds||0),0);
       if (stats.minutes) stats.minutes.textContent = fmtMinutes(totalSeconds);

@@ -7,13 +7,17 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const BOOTSTRAP_ADMIN_EMAIL = "rockysalespvt@gmail.com";
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !serviceRole) return json({ error: "Server configuration missing" }, 500);
+
     const authHeader = req.headers.get("Authorization") || "";
     if (!authHeader.startsWith("Bearer ")) return json({ error: "Unauthorized" }, 401);
 
@@ -25,14 +29,38 @@ Deno.serve(async (req: Request) => {
     const { data: authData, error: authError } = await adminClient.auth.getUser(token);
     if (authError || !authData.user) return json({ error: "Invalid session" }, 401);
 
+    const callerEmail = String(authData.user.email || "").trim().toLowerCase();
+    const isBootstrapAdmin = callerEmail === BOOTSTRAP_ADMIN_EMAIL;
+
     const { data: adminProfile, error: profileError } = await adminClient
       .from("profiles")
       .select("id,role,status")
       .eq("id", authData.user.id)
-      .single();
+      .maybeSingle();
 
-    if (profileError || !adminProfile || adminProfile.role !== "admin" || adminProfile.status !== "active") {
+    const profileIsAdmin = !!adminProfile && adminProfile.role === "admin" && adminProfile.status === "active";
+
+    if (!profileIsAdmin && !isBootstrapAdmin) {
       return json({ error: "Admin access required" }, 403);
+    }
+
+    if (isBootstrapAdmin && !profileIsAdmin) {
+      const { error: bootstrapError } = await adminClient.from("profiles").upsert({
+        id: authData.user.id,
+        email: callerEmail,
+        full_name: "NX Voice Admin",
+        role: "admin",
+        status: "active",
+        max_concurrent_calls: 10,
+        updated_at: new Date().toISOString(),
+      });
+      if (bootstrapError) {
+        return json({ error: "Admin profile bootstrap failed: " + bootstrapError.message }, 500);
+      }
+    }
+
+    if (profileError && !isBootstrapAdmin) {
+      return json({ error: "Admin profile lookup failed" }, 500);
     }
 
     const body = await req.json();

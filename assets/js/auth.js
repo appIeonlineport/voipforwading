@@ -67,3 +67,75 @@ export async function loadCustomerSnapshot(userId) {
     cdr: cdr.data || [],
   };
 }
+
+async function setupAdminProvisioning() {
+  if (!/admin\.html$/i.test(location.pathname)) return;
+  const button = document.getElementById('createUserBtn');
+  const msg = document.getElementById('userMsg');
+  const emailInput = document.getElementById('newEmail');
+  if (!button || !msg || !emailInput) return;
+
+  if (!document.getElementById('newFullName')) {
+    const emailField = emailInput.closest('.field');
+    if (emailField?.parentElement) {
+      const field = document.createElement('div');
+      field.className = 'field span2';
+      field.innerHTML = '<label>Customer / Company Name</label><input id="newFullName" type="text" placeholder="e.g. ABC Sales LLC">';
+      emailField.parentElement.insertBefore(field, emailField);
+    }
+  }
+
+  button.addEventListener('click', async (event) => {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    const fullName = document.getElementById('newFullName')?.value.trim() || '';
+    const email = emailInput.value.trim();
+    const password = document.getElementById('newPassword')?.value || '';
+    const initialMinutes = Number(document.getElementById('newMinutes')?.value || 0);
+    const maxCC = Number(document.getElementById('newCc')?.value || 2);
+
+    if (!fullName || !email || password.length < 8) {
+      msg.textContent = 'Enter customer/company name, valid email and a password of at least 8 characters.';
+      msg.style.color = '#b42318';
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = 'Creating…';
+    msg.textContent = 'Creating secure customer account…';
+    msg.style.color = '#667085';
+
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          full_name: fullName,
+          email,
+          password,
+          initial_minutes: initialMinutes,
+          max_concurrent_calls: maxCC,
+        },
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Customer account could not be created.');
+
+      msg.textContent = `Customer created: ${data.user.email} · ${data.user.initial_minutes} minutes · Max CC ${data.user.max_concurrent_calls}`;
+      msg.style.color = '#067647';
+      emailInput.value = '';
+      document.getElementById('newPassword').value = '';
+      document.getElementById('newFullName').value = '';
+    } catch (error) {
+      msg.textContent = error?.message || 'Customer creation failed.';
+      msg.style.color = '#b42318';
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Create Account';
+    }
+  }, true);
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupAdminProvisioning, { once: true });
+} else {
+  setupAdminProvisioning();
+}

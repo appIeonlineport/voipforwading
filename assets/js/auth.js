@@ -140,6 +140,7 @@ async function setupAdminProvisioning() {
       emailInput.value = '';
       document.getElementById('newPassword').value = '';
       document.getElementById('newFullName').value = '';
+      if (window.nxReloadAdmin) await window.nxReloadAdmin();
     } catch (error) {
       msg.textContent = error?.message || 'Customer creation failed.';
       msg.style.color = '#b42318';
@@ -150,8 +151,23 @@ async function setupAdminProvisioning() {
   }, true);
 }
 
+async function bootAdminPhase3() {
+  if (!/admin\.html$/i.test(location.pathname)) return;
+  try {
+    const mod = await import('./admin-phase3.js?v=2026081901');
+    await mod.setupAdminPhase3();
+  } catch (error) {
+    console.error('NX Admin Phase 3 failed to load', error);
+  }
+}
+
+async function bootAdmin() {
+  await setupAdminProvisioning();
+  await bootAdminPhase3();
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', setupAdminProvisioning, { once: true });
+  document.addEventListener('DOMContentLoaded', bootAdmin, { once: true });
 } else {
-  setupAdminProvisioning();
+  bootAdmin();
 }

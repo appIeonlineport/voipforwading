@@ -107,7 +107,13 @@ async function setupAdminProvisioning() {
     msg.style.color = '#667085';
 
     try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      const accessToken = sessionData?.session?.access_token;
+      if (!accessToken) throw new Error('Admin session expired. Please sign in again.');
+
       const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        headers: { Authorization: `Bearer ${accessToken}` },
         body: {
           full_name: fullName,
           email,
@@ -116,7 +122,17 @@ async function setupAdminProvisioning() {
           max_concurrent_calls: maxCC,
         },
       });
-      if (error) throw error;
+
+      if (error) {
+        let detail = '';
+        try {
+          if (error.context && typeof error.context.json === 'function') {
+            const payload = await error.context.json();
+            detail = payload?.error || payload?.message || '';
+          }
+        } catch (_) {}
+        throw new Error(detail || error.message || 'Edge Function request failed.');
+      }
       if (!data?.success) throw new Error(data?.error || 'Customer account could not be created.');
 
       msg.textContent = `Customer created: ${data.user.email} · ${data.user.initial_minutes} minutes · Max CC ${data.user.max_concurrent_calls}`;

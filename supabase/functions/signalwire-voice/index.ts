@@ -34,27 +34,29 @@ Deno.serve(async (req: Request) => {
   const event = url.searchParams.get('event') || 'inbound';
 
   try {
-    if (event === 'status') {
+    if (event === 'answered') {
       const parentCallSid = url.searchParams.get('parent') || data.ParentCallSid || data.CallSid;
-      const callStatus = String(data.CallStatus || data.DialCallStatus || '').toLowerCase();
       if (!parentCallSid) return new Response('Missing CallSid', { status: 400 });
-
-      if (callStatus === 'answered' || callStatus === 'in-progress' || callStatus === 'in_progress') {
-        const { error } = await supabase.rpc('update_signalwire_call_state', {
-          p_provider_call_id: parentCallSid,
-          p_status: 'answered',
-          p_provider_payload: data,
-        });
-        if (error) throw error;
-      } else if (['completed','busy','failed','no-answer','canceled'].includes(callStatus)) {
-        const { error } = await supabase.rpc('finalize_call_usage', {
-          p_provider_call_id: parentCallSid,
-          p_final_status: callStatus,
-          p_provider_payload: data,
-        });
-        if (error && !String(error.message || '').includes('Live call not found')) throw error;
-      }
+      const { error } = await supabase.rpc('update_signalwire_call_state', {
+        p_provider_call_id: parentCallSid,
+        p_status: 'answered',
+        p_provider_payload: data,
+      });
+      if (error) throw error;
       return new Response('OK', { status: 200 });
+    }
+
+    if (event === 'dial-final') {
+      const parentCallSid = url.searchParams.get('parent') || data.ParentCallSid || data.CallSid;
+      const finalStatus = String(data.DialCallStatus || data.CallStatus || 'completed').toLowerCase();
+      if (!parentCallSid) return xml('<Hangup/>');
+      const { error } = await supabase.rpc('finalize_call_usage', {
+        p_provider_call_id: parentCallSid,
+        p_final_status: finalStatus,
+        p_provider_payload: data,
+      });
+      if (error && !String(error.message || '').includes('Live call not found')) throw error;
+      return xml('<Hangup/>');
     }
 
     const callSid = String(data.CallSid || data.call_sid || '');
@@ -77,11 +79,11 @@ Deno.serve(async (req: Request) => {
     const route = Array.isArray(rows) ? rows[0] : rows;
     if (!route?.destination_phone) return xml('<Say>No forwarding destination is available.</Say><Hangup/>');
 
-    const callback = `${SUPABASE_URL}/functions/v1/signalwire-voice?event=status&parent=${encodeURIComponent(callSid)}&token=${encodeURIComponent(WEBHOOK_SECRET)}`;
+    const answeredCallback = `${SUPABASE_URL}/functions/v1/signalwire-voice?event=answered&parent=${encodeURIComponent(callSid)}&token=${encodeURIComponent(WEBHOOK_SECRET)}`;
+    const dialFinalCallback = `${SUPABASE_URL}/functions/v1/signalwire-voice?event=dial-final&parent=${encodeURIComponent(callSid)}&token=${encodeURIComponent(WEBHOOK_SECRET)}`;
     const destination = xmlEscape(String(route.destination_phone));
-    const callbackXml = xmlEscape(callback);
     console.log('route_reserved', { callSid, campaign: route.campaign_name, destination: route.destination_label || destination });
-    return xml(`<Dial timeout="45"><Number statusCallback="${callbackXml}" statusCallbackMethod="POST" statusCallbackEvent="answered completed">${destination}</Number></Dial>`);
+    return xml(`<Dial timeout="45" action="${xmlEscape(dialFinalCallback)}" method="POST"><Number statusCallback="${xmlEscape(answeredCallback)}" statusCallbackMethod="POST" statusCallbackEvent="answered">${destination}</Number></Dial>`);
   } catch (error) {
     console.error('signalwire_voice_error', error);
     return xml('<Say>We are unable to complete your call right now.</Say><Hangup/>', 200);

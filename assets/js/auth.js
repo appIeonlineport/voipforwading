@@ -154,7 +154,7 @@ async function setupAdminProvisioning() {
 async function bootAdminPhase3() {
   if (!/admin\.html$/i.test(location.pathname)) return;
   try {
-    const mod = await import('./admin-phase3.js?v=2026081903');
+    const mod = await import('./admin-phase3.js?v=2026081904');
     await mod.setupAdminPhase3();
   } catch (error) {
     console.error('NX Admin Phase 3 failed to load', error);

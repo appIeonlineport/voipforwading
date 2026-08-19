@@ -123,7 +123,7 @@ function ensureDidModal() {
       <div class="field span2"><label>Assigned Customer</label><select id="nxDidUser"><option value="">Unassigned</option></select></div>
       <div class="field span2"><label>Status</label><select id="nxDidEnabled"><option value="true">Enabled</option><option value="false">Disabled</option></select></div>
     </div>
-    <div class="modal-actions"><button class="btn" id="nxDidCancel">Cancel</button><button class="btn primary" id="nxDidSave">Save DID</button></div>
+    <div class="modal-actions"><button class="btn red" id="nxDidDelete" style="margin-right:auto;display:none">Delete DID</button><button class="btn" id="nxDidCancel">Cancel</button><button class="btn primary" id="nxDidSave">Save DID</button></div>
     <p id="nxDidMsg" style="font-size:11px;color:#667085"></p></div>`;
   document.body.appendChild(modal);
   document.getElementById('nxDidCancel').onclick = () => modal.classList.remove('open');
@@ -175,26 +175,27 @@ function openDid(number, profiles, reload) {
   userSelect.innerHTML = '<option value="">Unassigned</option>' + profiles.map(p => `<option value="${esc(p.id)}">${esc(p.full_name || p.email || 'Customer')} · ${esc(p.email || '')}</option>`).join('');
   userSelect.value = currentDid?.user_id || '';
   const msg = document.getElementById('nxDidMsg');
+  const del = document.getElementById('nxDidDelete');
+  del.style.display = currentDid ? 'inline-flex' : 'none';
   msg.textContent = currentDid?.user_id ? 'Assigned DID. Choose Unassigned to remove it from this customer.' : 'This DID is currently unassigned.';
   msg.style.color = '#667085';
+
   document.getElementById('nxDidSave').onclick = async () => {
     const save = document.getElementById('nxDidSave');
     save.disabled = true; msg.textContent = 'Saving…';
     try {
       const payload = {
-        phone_number: document.getElementById('nxDidPhone').value.trim(),
-        provider: document.getElementById('nxDidProvider').value.trim() || 'signalwire',
-        label: document.getElementById('nxDidLabel').value.trim() || null,
-        user_id: userSelect.value || null,
-        enabled: document.getElementById('nxDidEnabled').value === 'true',
-        updated_at: new Date().toISOString()
+        p_id: currentDid?.id || null,
+        p_phone_number: document.getElementById('nxDidPhone').value.trim(),
+        p_provider: document.getElementById('nxDidProvider').value.trim() || 'signalwire',
+        p_label: document.getElementById('nxDidLabel').value.trim() || null,
+        p_user_id: userSelect.value || null,
+        p_enabled: document.getElementById('nxDidEnabled').value === 'true'
       };
-      if (!payload.phone_number) throw new Error('Phone number is required.');
-      const res = currentDid
-        ? await supabase.from('assigned_numbers').update(payload).eq('id', currentDid.id).select().single()
-        : await supabase.from('assigned_numbers').insert(payload).select().single();
+      if (!payload.p_phone_number) throw new Error('Phone number is required.');
+      const res = await supabase.rpc('admin_manage_did', payload);
       if (res.error) throw res.error;
-      msg.textContent = payload.user_id ? 'DID assigned successfully.' : 'DID saved as unassigned inventory.';
+      msg.textContent = payload.p_user_id ? 'DID assigned successfully.' : 'DID saved as unassigned inventory.';
       msg.style.color = '#067647';
       await reload();
       setTimeout(() => document.getElementById('nxDidModal')?.classList.remove('open'), 500);
@@ -202,6 +203,26 @@ function openDid(number, profiles, reload) {
       msg.textContent = e?.message || 'DID update failed.'; msg.style.color = '#b42318';
     } finally { save.disabled = false; }
   };
+
+  del.onclick = async () => {
+    if (!currentDid) return;
+    if (!window.confirm(`Delete ${currentDid.phone_number} from DID inventory?`)) return;
+    del.disabled = true;
+    msg.textContent = 'Deleting DID…';
+    msg.style.color = '#667085';
+    try {
+      const res = await supabase.rpc('admin_delete_did', { p_id: currentDid.id });
+      if (res.error) throw res.error;
+      msg.textContent = 'DID deleted.';
+      msg.style.color = '#067647';
+      await reload();
+      setTimeout(() => document.getElementById('nxDidModal')?.classList.remove('open'), 400);
+    } catch (e) {
+      msg.textContent = e?.message || 'DID delete failed.';
+      msg.style.color = '#b42318';
+    } finally { del.disabled = false; }
+  };
+
   document.getElementById('nxDidModal').classList.add('open');
 }
 

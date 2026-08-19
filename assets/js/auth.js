@@ -189,3 +189,5 @@ if (document.readyState === 'loading') {
 } else {
   bootAdmin();
 }
+
+import('./portal-live.js?v=2026081906').catch((error) => console.error('NX portal live module failed', error));

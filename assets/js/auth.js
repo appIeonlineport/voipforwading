@@ -59,10 +59,28 @@ export async function loadCustomerSnapshot(userId) {
     supabase.from('live_calls').select('*').eq('user_id', userId).order('started_at', { ascending: false }),
     supabase.from('cdr').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(100),
   ]);
+  for (const r of [wallet, campaigns, numbers, liveCalls, cdr]) if (r.error) throw r.error;
+
+  const campaignIds = (campaigns.data || []).map(c => c.id);
+  let campaignNumbers = [];
+  let destinations = [];
+  if (campaignIds.length) {
+    const [cn, fd] = await Promise.all([
+      supabase.from('campaign_numbers').select('campaign_id,number_id,created_at').in('campaign_id', campaignIds),
+      supabase.from('forwarding_destinations').select('*').in('campaign_id', campaignIds).order('priority', { ascending: true }),
+    ]);
+    if (cn.error) throw cn.error;
+    if (fd.error) throw fd.error;
+    campaignNumbers = cn.data || [];
+    destinations = fd.data || [];
+  }
+
   return {
     wallet: wallet.data,
     campaigns: campaigns.data || [],
     numbers: numbers.data || [],
+    campaignNumbers,
+    destinations,
     liveCalls: liveCalls.data || [],
     cdr: cdr.data || [],
   };

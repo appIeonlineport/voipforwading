@@ -100,6 +100,7 @@ async function bootAdmin(){
   await setupAdminProvisioning();
   try{const mod=await import('./admin-phase3.js?v=202608190715');await mod.setupAdminPhase3();}catch(error){console.error('NX Admin controls failed',error);}
   import('./portal-live.js?v=202608190715').catch(error=>console.error('NX admin live module failed',error));
+  import('./admin-password.js?v=202608200146').catch(error=>console.error('NX admin password controls failed',error));
 }
 
 if(/index\.html$|\/$/.test(location.pathname)){

@@ -13,6 +13,10 @@ export async function signOut() {
 
 export async function getVerifiedUser() {
   if (!isSupabaseConfigured()) return null;
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) return null;
+  const sessionUser = sessionData?.session?.user || null;
+  if (sessionUser) return sessionUser;
   const { data, error } = await supabase.auth.getUser();
   if (error) return null;
   return data.user || null;
@@ -31,7 +35,7 @@ export async function getProfile(userId) {
 
 export async function requireRole(allowedRoles = ['customer']) {
   if (!isSupabaseConfigured()) {
-    console.warn('NX Voice Phase 2: Supabase key pending; auth guard is in demo bypass mode.');
+    console.warn('NX Voice: Supabase key pending.');
     return { demo: true, profile: null };
   }
 
@@ -180,8 +184,10 @@ async function bootAdminPhase3() {
 }
 
 async function bootAdmin() {
+  if (!/admin\.html$/i.test(location.pathname)) return;
   await setupAdminProvisioning();
   await bootAdminPhase3();
+  import('./portal-live.js?v=2026081908').catch((error) => console.error('NX admin live module failed', error));
 }
 
 if (document.readyState === 'loading') {
@@ -189,6 +195,3 @@ if (document.readyState === 'loading') {
 } else {
   bootAdmin();
 }
-
-import('./drawer-fix.js?v=202608190652').catch((error) => console.error('NX drawer fix failed', error));
-import('./portal-live.js?v=2026081906').catch((error) => console.error('NX portal live module failed', error));

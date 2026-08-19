@@ -190,6 +190,10 @@ async function bootAdmin() {
   import('./portal-live.js?v=2026081908').catch((error) => console.error('NX admin live module failed', error));
 }
 
+if (/index\.html$|\/$/.test(location.pathname)) {
+  import('./drawer-final.js?v=202608190658').catch((error) => console.error('NX customer drawer controller failed', error));
+}
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', bootAdmin, { once: true });
 } else {

@@ -106,4 +106,8 @@ if(/index\.html$|\/$/.test(location.pathname)){
   import('./drawer-final.js?v=202608190715').catch(error=>console.error('NX customer runtime failed',error));
 }
 
+if(/index\.html$|\/$|admin\.html$/i.test(location.pathname)){
+  import('./dashboard-analytics.js?v=202608192351').catch(error=>console.error('NX dashboard analytics failed',error));
+}
+
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootAdmin,{once:true});else bootAdmin();

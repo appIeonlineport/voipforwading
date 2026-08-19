@@ -1,0 +1,10 @@
+project_id = "jipmvlleiwgjgyskdciw"
+
+[functions.admin-create-user]
+verify_jwt = true
+
+# SignalWire is an external webhook. Authentication is enforced inside the
+# function with SIGNALWIRE_WEBHOOK_SECRET, so Supabase JWT verification must
+# remain disabled for this function.
+[functions.signalwire-voice]
+verify_jwt = false

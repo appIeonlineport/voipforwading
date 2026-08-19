@@ -190,4 +190,5 @@ if (document.readyState === 'loading') {
   bootAdmin();
 }
 
+import('./drawer-fix.js?v=202608190652').catch((error) => console.error('NX drawer fix failed', error));
 import('./portal-live.js?v=2026081906').catch((error) => console.error('NX portal live module failed', error));

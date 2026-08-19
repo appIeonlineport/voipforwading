@@ -10,7 +10,8 @@
     const toggle=(e)=>{e.preventDefault();e.stopImmediatePropagation();e.stopPropagation();const open=!sidebar.classList.contains('nx-open');sidebar.classList.toggle('nx-open',open);overlay.classList.toggle('nx-open',open);document.body.classList.toggle('nx-menu-open',open);btn.setAttribute('aria-expanded',open?'true':'false')};
     btn.addEventListener('click',toggle,true);
     overlay.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();close()},true);
-    document.addEventListener('click',e=>{const nav=e.target.closest('.sidebar .nav-btn[data-page]');if(nav&&innerWidth<=760) setTimeout(close,0)},true);
+    document.addEventListener('click',e=>{const nav=e.target.closest('.sidebar .nav-btn[data-page]');if(nav&&innerWidth<=760)setTimeout(close,0)},true);
   };
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+  import('./customer-cap.js?v=202608190715').catch(error=>console.error('NX customer CC/CAP controls failed',error));
 })();

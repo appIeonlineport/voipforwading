@@ -105,7 +105,8 @@ async function bootAdmin(){
 
 if(/index\.html$|\/$/.test(location.pathname)){
   import('./drawer-final.js?v=202608190715').catch(error=>console.error('NX customer runtime failed',error));
-  import('./live-calls.js?v=202608202318').catch(error=>console.error('NX live calls failed',error));
+  import('./live-calls.js?v=202608202320').catch(error=>console.error('NX live calls module failed',error));
+  import('./header-call-stats.js?v=202608202325').catch(error=>console.error('NX header call stats failed',error));
 }
 
 if(/index\.html$|\/$|admin\.html$/i.test(location.pathname)){
